@@ -34,33 +34,35 @@ Example usage: cat infile | ./endec (e|d) >outfile
 
 import os,sys,select,getpass,subprocess
 if sys.version_info > (3,):
-	buffer = memoryview
+    buffer = memoryview
 s=''
 def wrap(t,n=64):
-	return '\n'.join(list(map(lambda x: t[x:x+n], range(0, len(t), n))))
+    return '\n'.join(list(map(lambda x: t[x:x+n], range(0, len(t), n))))
 while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-	l = sys.stdin.readline()
-	if l:
-		s += l
-	else:
-		break
+    l = sys.stdin.readline()
+    if l:
+        s += l
+    else:
+        break
 if len(s) > 0 and len(sys.argv) == 2 and sys.argv[1] in ['e','d']:
-	if sys.argv[1] == 'e':
-		while True:
-			password = getpass.getpass()
-			confirm = getpass.getpass('Confirm password:')
-			if password != confirm:
-				sys.stderr.write('Passwords didn''t match!\n')
-			else:
-				break
-		p = subprocess.Popen('/bin/gzip | /usr/bin/openssl enc -pass pass:"'+password+'" -a -aes-256-cbc', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-		result = p.communicate(input=buffer(s.encode('utf-8')))[0].decode().replace('\n','')
-		sys.stdout.write(wrap(result,120)+'\n')
-	else:
-		password = getpass.getpass()
-		p = subprocess.Popen('/usr/bin/openssl enc -pass pass:"'+password+'" -d -a -aes-256-cbc | /bin/gunzip', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-		result = p.communicate(input=buffer(wrap(s).encode('utf-8')))[0].decode()
-		sys.stdout.write(result)
+    if sys.argv[1] == 'e':
+        while True:
+            password = getpass.getpass()
+            confirm = getpass.getpass('Confirm password:')
+            if password != confirm:
+                sys.stderr.write('Passwords didn''t match!\n')
+            else:
+                break
+        p = subprocess.Popen('/bin/gzip | /usr/bin/openssl enc -pass pass:"'+password+'" -a -aes-256-cbc', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if sys.version_info[0] >= 3:
+            s = bytes(s,'utf-8')
+        result = p.communicate(input=buffer(s))[0].decode().replace('\n','')
+        sys.stdout.write(wrap(result,120)+'\n')
+    else:
+        password = getpass.getpass()
+        p = subprocess.Popen('/usr/bin/openssl enc -pass pass:"'+password+'" -d -a -aes-256-cbc | /bin/gunzip', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        result = p.communicate(input=buffer(wrap(s).encode('utf-8')))[0].decode()
+        sys.stdout.write(result)
 else:
-	sys.stderr.write(usage.lstrip().replace('./endec','./'+os.path.basename(sys.argv[0])))
-	sys.exit(1)
+    sys.stderr.write(usage.lstrip().replace('./endec','./'+os.path.basename(sys.argv[0])))
+    sys.exit(1)
