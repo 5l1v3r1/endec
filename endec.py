@@ -61,7 +61,8 @@ if len(s) > 0 and len(sys.argv) == 2 and sys.argv[1] in ['e','d']:
     else:
         password = getpass.getpass()
         p = subprocess.Popen('/usr/bin/openssl enc -pass pass:"'+password+'" -d -a -aes-256-cbc | /bin/gunzip', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        result = p.communicate(input=buffer(wrap(s).encode('utf-8')))[0].decode()
+        x = p.communicate(input=buffer(wrap(s).encode('utf-8')))
+        result = x[0].decode('utf-8')
         sys.stdout.write(result)
 else:
     sys.stderr.write(usage.lstrip().replace('./endec','./'+os.path.basename(sys.argv[0])))
