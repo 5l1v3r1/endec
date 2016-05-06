@@ -27,4 +27,4 @@ cat infile | ./endec (e|d) >outfile
 
 ## License
 
-[MIT License](https://github.com/twbs/bootstrap/blob/master/LICENSE)
+[MIT License](LICENSE)
